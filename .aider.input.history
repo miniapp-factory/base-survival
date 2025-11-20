@@ -1,0 +1,570 @@
+
+# 2025-11-20 17:10:50.739870
++Code the following app
++```
++You are the OpenxAI Mini App Factory builder.
++
++I want you to build a very simple, self-contained onchain mini-game on Base, that an AI can implement reliably from this prompt in one shot.
++
++0. Game identity
++
++Game name: Lucky Blocks – Guess & Score
++Tagline: “Guess the right block, climb the score, store your best on Base.”
++
++This should be:
++
++A tiny, casual game.
++
++Easy to understand in 5 seconds.
++
++With one simple smart contract on Base to store best scores.
++
++AI is used only for text (intro + recap), not for game logic.
++
++1. Core game rules (keep them exactly like this)
++
++Each run (game session) works like this:
++
++A run has exactly 5 rounds.
++
++At the start of a run:
++
++currentRound = 1
++
++score = 0
++
++For each round (1 to 5):
++
++The game picks a hidden random integer secret between 1 and 5 (inclusive).
++
++This randomness can be done off-chain (e.g. Math.random() on the frontend).
++It does NOT need to be verified onchain. This is just a fun casual game.
++
++The UI shows the player 5 buttons:
++
++1, 2, 3, 4, 5
++
++The player chooses a number guess between 1 and 5.
++
++The game compares:
++
++If guess == secret: add 10 points to score.
++
++Else: add 0.
++
++Then currentRound += 1.
++
++After round 5, the run ends. The final score is simply the score accumulated:
++
++Min score = 0
++
++Max score = 50
++
++There are no extra mechanics:
++no HP, no Risk, no lives, no combo, no multipliers.
++
++Just 5 guesses, +10 points per correct guess.
++
++2. Onchain logic on Base (one simple contract)
++
++Create one smart contract on Base called LuckyBlocksScoreboard.
++
++It must do ONLY this:
++
++Store each player’s best score:
++
++Mapping: mapping(address => uint256) public bestScore;
++
++Function submitScore(uint256 score):
++
++msg.sender is the player.
++
++If score is greater than the current bestScore[msg.sender], update it.
++
++Otherwise, do nothing.
++
++Emit an event, e.g.:
++
++event ScoreSubmitted(address indexed player, uint256 score);
++
++View functions:
++
++function getBestScore(address player) external view returns (uint256);
++
++(This can simply return bestScore[player].)
++
++Optional (only if easy to implement):
++
++Keep an array of the top scores to display a simple leaderboard.
++
++But if this is complex, it is OK to skip a global leaderboard and only show the best score per player.
++
++No other onchain complexity is required.
++No tokens, no NFTs, no admin functions are strictly necessary (owner can just be the deployer).
++
++3. AI usage (text only, no logic)
++
++Use the AI only for narrative text and flavor, not for calculating scores or randomness.
++
++Implement 3 AI interactions:
++
++Intro text when a run starts
++
++After the player clicks “Start Game”, ask AI to generate a short intro (1–2 sentences), e.g.:
++
++Example style:
++“Welcome to Lucky Blocks on Base. You have 5 guesses to test your luck. Pick the right block, stack points, and lock in your best score onchain.”
++
++Optional short line after each round
++
++After the player guesses, the game already knows if it was correct or not (from local logic).
++
++Ask AI for a very short reaction (one sentence max), e.g.:
++
++If correct: “Nice hit! You guessed the hidden block.”
++
++If wrong: “Unlucky this time, the hidden block slipped away.”
++
++End-of-run recap
++
++When the run ends (after 5 rounds), provide AI with:
++
++total score
++
++number of correct guesses
++
++Ask AI to generate:
++
++A short run title (max 40 characters).
++
++A short recap paragraph (max 200 characters).
++
++Example style:
++
++Title: “Sharpshooter of Base”
++Recap: “You nailed 4 out of 5 guesses – serious intuition. Your luck and timing make you a top contender in Lucky Blocks.”
++
++The AI must:
++
++Avoid NSFW or offensive content.
++
++Avoid financial advice or claims.
++
++Use a light, playful, arcade-style tone.
++
++All numeric logic (rounds, score, correctness) must be done in code, not by AI.
++
++4. Frontend / UX (very simple)
++
++Build a single-page UI with 3 main states:
++
++Home / Lobby
++
++Show:
++
++Game name: “Lucky Blocks – Guess & Score”
++
++Short description: “Guess the right block 5 times to build your score. Your best runs live on Base.”
++
++Button:
++
++“Connect Wallet”
++
++Once wallet is connected:
++
++Show the player’s onchain best score (read from LuckyBlocksScoreboard).
++
++Button: “Start Game”.
++
++Game screen (run in progress)
++
++Show:
++
++“Round X of 5”
++
++Current score for this run.
++
++Display the latest AI narrative (intro, then per-round reactions).
++
++Show 5 big buttons labeled 1, 2, 3, 4, 5.
++
++When the player clicks one:
++
++The code runs the game logic:
++
++random secret between 1–5
++
++compares
++
++updates score
++
++Shows whether the guess was correct or not.
++
++Requests short AI reaction.
++
++Moves to next round, unless it was round 5.
++
++End-of-run screen
++
++Show:
++
++“Final score: X / 50”
++
++AI-generated title and recap text.
++
++Buttons:
++
++“Submit Score Onchain”
++
++Calls submitScore(score) on LuckyBlocksScoreboard with the final score of this run.
++
++After transaction, update the displayed best score.
++
++“Play Again”
++
++Starts a new run (reset rounds and score to zero).
++
++UI specifics:
++
++Must be mobile-friendly and responsive.
++
++Use a simple, clean layout. No need for complex design systems.
++
++A light “Base / neon” theme is nice but not required for functionality.
++
++5. Technical simplifications (important for reliability)
++
++To keep this easy for an AI to implement in one shot:
++
++Do not implement complex randomness onchain.
++Use simple frontend randomness; we accept that players could cheat if they want. It’s just a casual game.
++
++Do not implement complex tokenomics, reward pools, staking, or NFTs.
++The only onchain part is the best score per wallet.
++
++Do not build multi-contract architectures.
++One contract LuckyBlocksScoreboard is enough.
++
++Everything should be designed for:
++
++Clarity
++
++Few moving parts
++
++High chance of working correctly on first deployment
++
++6. Deliverables
++
++From this prompt, please:
++
++Generate and deploy the LuckyBlocksScoreboard contract on Base.
++
++Build the mini app frontend with:
++
++Wallet connection
++
++5-round guessing game
++
++Score calculation and display
++
++Onchain best-score submission
++
++Implement the AI calls:
++
++Intro text at run start
++
++Optional per-round reaction
++
++End-of-run title + recap
++
++The result should be a fully working, simple mini-game that can be demoed quickly:
++
++Connect wallet → play 5 quick guesses → see score → store best score on Base → play again.
++```
++
++Generate an app logo and update the app metadata title and description.
+
+# 2025-11-20 17:10:50.742320
++Code the following app
++```
++You are the OpenxAI Mini App Factory builder.
++
++I want you to build a very simple, self-contained onchain mini-game on Base, that an AI can implement reliably from this prompt in one shot.
++
++0. Game identity
++
++Game name: Lucky Blocks – Guess & Score
++Tagline: “Guess the right block, climb the score, store your best on Base.”
++
++This should be:
++
++A tiny, casual game.
++
++Easy to understand in 5 seconds.
++
++With one simple smart contract on Base to store best scores.
++
++AI is used only for text (intro + recap), not for game logic.
++
++1. Core game rules (keep them exactly like this)
++
++Each run (game session) works like this:
++
++A run has exactly 5 rounds.
++
++At the start of a run:
++
++currentRound = 1
++
++score = 0
++
++For each round (1 to 5):
++
++The game picks a hidden random integer secret between 1 and 5 (inclusive).
++
++This randomness can be done off-chain (e.g. Math.random() on the frontend).
++It does NOT need to be verified onchain. This is just a fun casual game.
++
++The UI shows the player 5 buttons:
++
++1, 2, 3, 4, 5
++
++The player chooses a number guess between 1 and 5.
++
++The game compares:
++
++If guess == secret: add 10 points to score.
++
++Else: add 0.
++
++Then currentRound += 1.
++
++After round 5, the run ends. The final score is simply the score accumulated:
++
++Min score = 0
++
++Max score = 50
++
++There are no extra mechanics:
++no HP, no Risk, no lives, no combo, no multipliers.
++
++Just 5 guesses, +10 points per correct guess.
++
++2. Onchain logic on Base (one simple contract)
++
++Create one smart contract on Base called LuckyBlocksScoreboard.
++
++It must do ONLY this:
++
++Store each player’s best score:
++
++Mapping: mapping(address => uint256) public bestScore;
++
++Function submitScore(uint256 score):
++
++msg.sender is the player.
++
++If score is greater than the current bestScore[msg.sender], update it.
++
++Otherwise, do nothing.
++
++Emit an event, e.g.:
++
++event ScoreSubmitted(address indexed player, uint256 score);
++
++View functions:
++
++function getBestScore(address player) external view returns (uint256);
++
++(This can simply return bestScore[player].)
++
++Optional (only if easy to implement):
++
++Keep an array of the top scores to display a simple leaderboard.
++
++But if this is complex, it is OK to skip a global leaderboard and only show the best score per player.
++
++No other onchain complexity is required.
++No tokens, no NFTs, no admin functions are strictly necessary (owner can just be the deployer).
++
++3. AI usage (text only, no logic)
++
++Use the AI only for narrative text and flavor, not for calculating scores or randomness.
++
++Implement 3 AI interactions:
++
++Intro text when a run starts
++
++After the player clicks “Start Game”, ask AI to generate a short intro (1–2 sentences), e.g.:
++
++Example style:
++“Welcome to Lucky Blocks on Base. You have 5 guesses to test your luck. Pick the right block, stack points, and lock in your best score onchain.”
++
++Optional short line after each round
++
++After the player guesses, the game already knows if it was correct or not (from local logic).
++
++Ask AI for a very short reaction (one sentence max), e.g.:
++
++If correct: “Nice hit! You guessed the hidden block.”
++
++If wrong: “Unlucky this time, the hidden block slipped away.”
++
++End-of-run recap
++
++When the run ends (after 5 rounds), provide AI with:
++
++total score
++
++number of correct guesses
++
++Ask AI to generate:
++
++A short run title (max 40 characters).
++
++A short recap paragraph (max 200 characters).
++
++Example style:
++
++Title: “Sharpshooter of Base”
++Recap: “You nailed 4 out of 5 guesses – serious intuition. Your luck and timing make you a top contender in Lucky Blocks.”
++
++The AI must:
++
++Avoid NSFW or offensive content.
++
++Avoid financial advice or claims.
++
++Use a light, playful, arcade-style tone.
++
++All numeric logic (rounds, score, correctness) must be done in code, not by AI.
++
++4. Frontend / UX (very simple)
++
++Build a single-page UI with 3 main states:
++
++Home / Lobby
++
++Show:
++
++Game name: “Lucky Blocks – Guess & Score”
++
++Short description: “Guess the right block 5 times to build your score. Your best runs live on Base.”
++
++Button:
++
++“Connect Wallet”
++
++Once wallet is connected:
++
++Show the player’s onchain best score (read from LuckyBlocksScoreboard).
++
++Button: “Start Game”.
++
++Game screen (run in progress)
++
++Show:
++
++“Round X of 5”
++
++Current score for this run.
++
++Display the latest AI narrative (intro, then per-round reactions).
++
++Show 5 big buttons labeled 1, 2, 3, 4, 5.
++
++When the player clicks one:
++
++The code runs the game logic:
++
++random secret between 1–5
++
++compares
++
++updates score
++
++Shows whether the guess was correct or not.
++
++Requests short AI reaction.
++
++Moves to next round, unless it was round 5.
++
++End-of-run screen
++
++Show:
++
++“Final score: X / 50”
++
++AI-generated title and recap text.
++
++Buttons:
++
++“Submit Score Onchain”
++
++Calls submitScore(score) on LuckyBlocksScoreboard with the final score of this run.
++
++After transaction, update the displayed best score.
++
++“Play Again”
++
++Starts a new run (reset rounds and score to zero).
++
++UI specifics:
++
++Must be mobile-friendly and responsive.
++
++Use a simple, clean layout. No need for complex design systems.
++
++A light “Base / neon” theme is nice but not required for functionality.
++
++5. Technical simplifications (important for reliability)
++
++To keep this easy for an AI to implement in one shot:
++
++Do not implement complex randomness onchain.
++Use simple frontend randomness; we accept that players could cheat if they want. It’s just a casual game.
++
++Do not implement complex tokenomics, reward pools, staking, or NFTs.
++The only onchain part is the best score per wallet.
++
++Do not build multi-contract architectures.
++One contract LuckyBlocksScoreboard is enough.
++
++Everything should be designed for:
++
++Clarity
++
++Few moving parts
++
++High chance of working correctly on first deployment
++
++6. Deliverables
++
++From this prompt, please:
++
++Generate and deploy the LuckyBlocksScoreboard contract on Base.
++
++Build the mini app frontend with:
++
++Wallet connection
++
++5-round guessing game
++
++Score calculation and display
++
++Onchain best-score submission
++
++Implement the AI calls:
++
++Intro text at run start
++
++Optional per-round reaction
++
++End-of-run title + recap
++
++The result should be a fully working, simple mini-game that can be demoed quickly:
++
++Connect wallet → play 5 quick guesses → see score → store best score on Base → play again.
++```
++
++Generate an app logo and update the app metadata title and description.
